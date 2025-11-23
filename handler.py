@@ -99,17 +99,23 @@ def handler(job):
 
     # vLLM may take a bit to boot on cold start; wait for it
     last_err = None
-    for _ in range(20):  # ~20s max
+    for attempt in range(60):  # ~60s max (vLLM might restart)
         try:
-            resp = requests.post(VLLM_URL, json=payload, timeout=60)
+            resp = requests.post(VLLM_URL, json=payload, timeout=120)
             resp.raise_for_status()
             break
         except Exception as e:
             last_err = e
+            if attempt % 10 == 0:  # Log every 10 attempts
+                print(f"vLLM connection attempt {attempt}/60 failed: {e}")
             import time
             time.sleep(1)
     else:
-        raise last_err
+        return {
+            "success": False,
+            "elements": [],
+            "reasoning": f"vLLM server unavailable after 60s: {str(last_err)}"
+        }
 
     content = resp.json()["choices"][0]["message"]["content"].strip()
 
