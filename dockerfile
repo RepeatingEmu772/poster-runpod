@@ -11,23 +11,9 @@ RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 
 COPY handler.py /app/handler.py
 
-# Start vLLM OpenAI server in the background, wait for it, then start the Runpod handler.
-# We do this explicitly because overriding CMD can prevent the base image's vLLM launch.
 CMD ["bash", "-lc", "python3 -m vllm.entrypoints.openai.api_server --model ${MODEL_NAME} --trust-remote-code --dtype float16 --max-model-len ${MAX_MODEL_LEN} --gpu-memory-utilization ${GPU_MEMORY_UTILIZATION} --host 0.0.0.0 --port 8000 & \
   echo 'Waiting for vLLM...'; \
-  python3 - <<'PY' \
-import time, urllib.request
-url='http://127.0.0.1:8000/v1/models'
-for i in range(60):
-    try:
-        with urllib.request.urlopen(url, timeout=1) as r:
-            if r.status == 200:
-                print('vLLM is up')
-                raise SystemExit(0)
-    except Exception:
-        time.sleep(1)
-print('vLLM did not start in time')
-raise SystemExit(1)
-PY \
+  python3 -c 'import time,urllib.request;url=\"http://127.0.0.1:8000/v1/models\";ok=False;\nimport sys\n\nimport time,urllib.request;\nfor i in range(60):\n    try:\n        r=urllib.request.urlopen(url,timeout=1);\n        ok=(r.status==200);\n        if ok: break;\n    except Exception:\n        pass;\n    time.sleep(1);\nsys.exit(0 if ok else 1)' \
+  && echo 'vLLM is up' \
   && echo 'Starting handler...' \
   && python3 /app/handler.py"]
