@@ -94,8 +94,20 @@ def handler(job):
         "max_tokens": 400
     }
 
-    resp = requests.post(VLLM_URL, json=payload, timeout=60)
-    resp.raise_for_status()
+    # vLLM may take a bit to boot on cold start; wait for it
+    last_err = None
+    for _ in range(20):  # ~20s max
+        try:
+            resp = requests.post(VLLM_URL, json=payload, timeout=60)
+            resp.raise_for_status()
+            break
+        except Exception as e:
+            last_err = e
+            import time
+            time.sleep(1)
+    else:
+        raise last_err
+
     content = resp.json()["choices"][0]["message"]["content"].strip()
 
     # fallback
