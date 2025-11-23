@@ -71,6 +71,9 @@ Rules:
 """.strip()
 
 def handler(job):
+    if not job or "input" not in job or job["input"] is None:
+        return {"success": True, "elements": [], "reasoning": "warmup"}
+
     job_input = job["input"]
 
     image_url = job_input["canvasContext"]["existingImage"]["url"]
