@@ -23,34 +23,20 @@ CMD ["bash", "-c", "set -x; \
     --host 0.0.0.0 \
     --port 8000 2>&1 | tee /tmp/vllm.log & \
   VLLM_PID=$!; \
-  echo \"vLLM PID: $VLLM_PID\"; \
-  echo 'Waiting for vLLM (max 180s)...'; \
+  echo \"vLLM started with PID: $VLLM_PID\"; \
+  echo 'Waiting for vLLM to be ready (max 180s)...'; \
   for i in {1..180}; do \
     if curl -s http://127.0.0.1:8000/v1/models >/dev/null 2>&1; then \
-      echo \"vLLM ready after ${i}s!\"; \
+      echo \"vLLM is ready after ${i}s!\"; \
       break; \
     fi; \
     if ! kill -0 $VLLM_PID 2>/dev/null; then \
-      echo 'ERROR: vLLM died!'; \
-      tail -50 /tmp/vllm.log; \
+      echo 'ERROR: vLLM process died during startup!'; \
+      echo 'Last 100 lines of vLLM log:'; \
+      tail -100 /tmp/vllm.log; \
       exit 1; \
     fi; \
     sleep 1; \
   done; \
-  ( while true; do \
-      sleep 10; \
-      if ! kill -0 $VLLM_PID 2>/dev/null; then \
-        echo 'vLLM crashed, restarting...'; \
-        python3 -m vllm.entrypoints.openai.api_server \
-          --model ${MODEL_NAME} \
-          --trust-remote-code \
-          --dtype float16 \
-          --max-model-len ${MAX_MODEL_LEN} \
-          --gpu-memory-utilization ${GPU_MEMORY_UTILIZATION} \
-          --host 0.0.0.0 \
-          --port 8000 2>&1 | tee -a /tmp/vllm.log & \
-        VLLM_PID=$!; \
-      fi; \
-    done ) & \
-  echo 'Starting handler...'; \
+  echo 'vLLM is up! Starting handler...'; \
   exec python3 /app/handler.py"]
