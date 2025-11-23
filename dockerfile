@@ -22,11 +22,12 @@ CMD ["bash", "-lc", "set -euo pipefail; set -x; \
     --host 0.0.0.0 \
     --port 8000 & \
   echo 'Waiting for vLLM...'; \
-  python3 -c \"import time,urllib.request,sys; url='http://127.0.0.1:8000/v1/models'; ok=False; \
-for i in range(90): \
-  try: r=urllib.request.urlopen(url,timeout=1); ok=(getattr(r,'status',200)==200); \
-  except Exception: pass; \
-  time.sleep(1); \
-sys.exit(0 if ok else 1)\"; \
+  for i in {1..90}; do \
+    if curl -s http://127.0.0.1:8000/v1/models >/dev/null 2>&1; then \
+      echo 'vLLM is ready!'; \
+      break; \
+    fi; \
+    sleep 1; \
+  done; \
   echo 'vLLM up; starting handler...'; \
   exec python3 /app/handler.py"]
