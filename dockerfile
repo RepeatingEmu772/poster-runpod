@@ -7,7 +7,7 @@ ENV GPU_MEMORY_UTILIZATION=0.95
 ENV VLLM_ARGS="--trust-remote-code"
 
 COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txtß
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY handler.py /app/handler.py
 
