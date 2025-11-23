@@ -1,4 +1,4 @@
-FROM runpod/worker-v1-vllm:stable-cuda12.4.0
+FROM runpod/worker-v1-vllm:v2.7.0stable-cuda12.1.0
 
 ENV MODEL_NAME="Qwen/Qwen2.5-VL-7B-Instruct"
 ENV MAX_MODEL_LEN=8192
