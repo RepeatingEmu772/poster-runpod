@@ -1,5 +1,4 @@
-
-FROM runpod/worker-vllm:latest
+FROM runpod/worker-v1-vllm:v2.5.0stable-cuda12.1.0
 
 # Default vLLM model + args for multimodal Qwen-VL
 ENV MODEL_NAME="Qwen/Qwen2.5-VL-7B-Instruct"
@@ -9,7 +8,7 @@ ENV GPU_MEMORY_UTILIZATION=0.95
 ENV VLLM_ARGS="--trust-remote-code"
 
 COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txtß
 
 COPY handler.py /app/handler.py
 
