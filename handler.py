@@ -25,7 +25,7 @@ def _build_prompt(job_input: dict) -> str:
 You are a layout assistant for a poster editor.
 
 Task:
-Given an image and an instruction, propose where to place new text on the canvas.
+Given an image and an instruction, propose where to place new text on top of the image so that it is visually appealing and conveys the purpose of the poster.
 
 Canvas:
 - width: {dims["width"]} px
